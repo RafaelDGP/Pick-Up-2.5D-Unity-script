@@ -3,41 +3,44 @@ using UnityEngine;
 public class PlayerDetect : MonoBehaviour
 {
     public Transform pos;
-    private bool isHolding;
     private bool isLooking;
-    private GameObject obj;
-    private Rigidbody rb;
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Q) && isHolding){
-            Debug.Log("Soltou");
-            rb.isKinematic = false;
-            obj = null;
-            rb = null;
-            isHolding = false;
+        if(Input.GetKeyDown(KeyCode.Q) && PlayerStates.isHolding){
+            PlayerStates.holdingObj.transform.position = pos.position;
+            PlayerStates.holdingObj.SetActive(true);
+            PlayerStates.rb.isKinematic = false;
+            PlayerStates.rb = null;
+            PlayerStates.holdingObj = null;
+            PlayerStates.isHolding = false;
             isLooking = false;
         }
 
-        if(Input.GetKeyDown(KeyCode.E) && isLooking && !isHolding){
-            isHolding = true;
-        }
-
-        if(isHolding && obj != null){
-            obj.transform.position = pos.position;
-            rb.isKinematic = true;
+        if(Input.GetKeyDown(KeyCode.E) && isLooking && !PlayerStates.isHolding){
+            PlayerStates.isHolding = true;
+            PlayerStates.holdingObj.SetActive(false);
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
         if(other.CompareTag("Item")){
-            if(!isHolding && !isLooking){
-                Debug.Log("Pegou");
-                obj = other.gameObject;
-                rb = obj.GetComponent<Rigidbody>();
+            if(!PlayerStates.isHolding && !isLooking){
+                PlayerStates.holdingObj = other.gameObject;
+                PlayerStates.rb = PlayerStates.holdingObj.GetComponent<Rigidbody>();
                 isLooking = true;
             }
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if(other.CompareTag("Item")){
+            PlayerStates.rb = null;
+            PlayerStates.holdingObj = null;
+            PlayerStates.isHolding = false;
+            isLooking = false;
         }
     }
 }
